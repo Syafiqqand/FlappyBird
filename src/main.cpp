@@ -122,29 +122,25 @@ MainMenuAction DrawMainMenu() {
 }
 
 int main() {
-    const int screenWidth = 800;
-    const int screenHeight = 600;
+    const int screenWidth = 1920;
+    const int screenHeight = 1080;
 
     InitWindow(screenWidth, screenHeight, "Flappy Bird");
     background = LoadTexture("Bg Design Pattern.png");
     if (background.id == 0) {
-    TraceLog(LOG_WARNING, "BACKGROUND TEXTURE FAILED TO LOAD!");
-}
+        TraceLog(LOG_WARNING, "BACKGROUND TEXTURE FAILED TO LOAD!");
+    }
     SetTargetFPS(60);
 
     // Load texture untuk burung
     Texture2D birdTexture = LoadTexture("Char.png");
-     if (birdTexture.id == 0) {
+    if (birdTexture.id == 0) {
         TraceLog(LOG_ERROR, "FAILED TO LOAD BIRD TEXTURE!");
-        // Tampilkan pesan error
         const char* errorMsg = "Failed to load bird texture!";
-        int fontSize = 20;
-        int textWidth = MeasureText(errorMsg, fontSize);
-        DrawText(errorMsg, (screenWidth - textWidth)/2, screenHeight/2, fontSize, RED);
     }
     
     Bird bird;
-    bird.SetTexture(birdTexture); // Set texture ke bird
+    bird.SetTexture(birdTexture); 
 
     GameManager gameManager;
     ScoreManager scoreManager;
@@ -207,6 +203,7 @@ int main() {
                 if (menuAction == MENU_PLAY) {
                     gameManager.Reset();
                     bird = Bird();
+                    bird.SetTexture(birdTexture); // Set ulang texture
                     pipes.clear();
                     frameCounter = 0;
                 }
@@ -216,14 +213,21 @@ int main() {
                 }
             }
             else {
-            // Ganti ClearBackground dengan DrawTexture
-            DrawTexture(background, 0, 0, WHITE); // <--- INI PERUBAHAN UTAMA
-        
-            bird.Draw();
-            for (const auto& pipe : pipes) {
-            pipe.Draw();
-            }
-            scoreManager.Draw();
+                // Gambar background
+                DrawTexture(background, 0, 0, WHITE);
+            
+                // Gambar burung hanya jika game sedang berjalan
+                if (gameManager.GetState() == PLAYING) {
+                    bird.Draw();
+                }
+                
+                // Gambar pipa
+                for (const auto& pipe : pipes) {
+                    pipe.Draw();
+                }
+                
+                // Gambar skor
+                scoreManager.Draw();
 
                 if (gameManager.GetState() == GAME_OVER) {
                     GameOverAction gameOverAction = DrawGameOverScreen(gameManager.GetScore());
@@ -232,6 +236,7 @@ int main() {
                         // Reset game
                         gameManager.Reset();
                         bird = Bird();
+                        bird.SetTexture(birdTexture); // Set ulang texture
                         pipes.clear();
                         frameCounter = 0;
                     }

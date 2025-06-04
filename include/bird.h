@@ -14,15 +14,16 @@ class Bird {
     int framesCounter;
     int framesSpeed;
     
+    // Pindahkan gravity dan jumpForce ke private
+    float gravity;
+    float jumpForce;
+    
 public:
     Bird();
-    void SetTexture(Texture2D tex);
+    void SetTexture(Texture2D tex); // Tambahkan deklarasi ini
     void Update();
     void Draw() const;
     Rectangle GetRect() const;
     void Jump();
     bool CheckCollision(const Pipe& pipe) const;
-
-    static constexpr float gravity = 0.5f;
-    static constexpr float jumpForce = -8.0f;
 };
