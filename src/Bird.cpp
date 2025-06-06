@@ -16,12 +16,10 @@ void Bird::SetTexture(Texture2D tex) {
     
     if (texture.id != 0) {
         TraceLog(LOG_INFO, "Bird texture loaded: %dx%d", texture.width, texture.height);
-        frameRec = { 
-            0.0f, 
-            0.0f, 
-            static_cast<float>(texture.width) / 5.0f, 
-            static_cast<float>(texture.height) / 5.0f 
-        };
+        // Sekarang sprite sheet 5 kolom x 5 baris = total 25 frame
+        float fw = static_cast<float>(texture.width) / 5.0f;
+        float fh = static_cast<float>(texture.height) / 5.0f;
+        frameRec = { 0.0f, 0.0f, fw, fh };
     } else {
         TraceLog(LOG_WARNING, "Bird texture not set!");
     }
@@ -31,39 +29,34 @@ void Bird::Update() {
     velocity += gravity;
     y += velocity;
 
-    if (y > GetScreenHeight()) y = GetScreenHeight();
+    if (y > GetScreenHeight()) {
+        y = GetScreenHeight();
+        velocity = 0;
+    }
     if (y < 0) {
         y = 0;
         velocity = 0;
     }
     
+    // Update animasi: total 25 frame (0..24)
     framesCounter++;
     if (framesCounter >= (60 / framesSpeed)) {
         framesCounter = 0;
         currentFrame++;
-        
         if (currentFrame >= 25) currentFrame = 0;
-        
         int frameX = currentFrame % 5;
-        int frameY = currentFrame / 5;
-        
-        frameRec.x = (float)frameX * frameRec.width;
-        frameRec.y = (float)frameY * frameRec.height;
+        int frameY = currentFrame / 5; // integer division
+        frameRec.x = frameX * frameRec.width;
+        frameRec.y = frameY * frameRec.height;
     }
 }
 
-Rectangle Bird::GetRect() const {
-    return { 
-        x - frameRec.width/2, 
-        y - frameRec.height/2, 
-        frameRec.width, 
-        frameRec.height 
-    };
-}
-
 bool Bird::CheckCollision(const Pipe& pipe) const {
-    return CheckCollisionRecs(GetRect(), pipe.upper) ||
-           CheckCollisionRecs(GetRect(), pipe.lower);
+    // Collider lingkaran: radius = setengah ukuran frame (diperkecil 80% untuk fitting)
+    float r = (frameRec.width < frameRec.height ? frameRec.width/2.0f : frameRec.height/2.0f) * 0.8f;
+    Vector2 center = { x, y };
+    return CheckCollisionCircleRec(center, r, pipe.upper)
+        || CheckCollisionCircleRec(center, r, pipe.lower);
 }
 
 void Bird::Jump() {
@@ -72,21 +65,23 @@ void Bird::Jump() {
 
 void Bird::Draw() const {
     if (texture.id != 0) {
-        // Hitung posisi tengah dengan benar
         Vector2 position = {
             x - frameRec.width / 2.0f,
             y - frameRec.height / 2.0f
         };
-        
-        // Debug: Gambar bounding box
-        DrawRectangleLinesEx(
-            {position.x, position.y, frameRec.width, frameRec.height},
-            2,
-            RED
-        );
-        
         DrawTextureRec(texture, frameRec, position, WHITE);
     } else {
-        DrawRectangleRec(GetRect(), RED);
+        // Jika texture belum ada, tampilkan placeholder
+        DrawCircle((int)x, (int)y, 20, RED);
     }
+}
+
+Rectangle Bird::GetRect() const {
+    // Untuk keperluan hitung posisi (meski collision pakai lingkaran)
+    return { 
+        x - frameRec.width/2.0f, 
+        y - frameRec.height/2.0f, 
+        frameRec.width, 
+        frameRec.height 
+    };
 }

@@ -9,4 +9,6 @@ class ScoreManager : public Observer {
 public:
     void OnNotify(int event) override;
     void Draw() const;
+    void Reset();      // Tambahkan method untuk mereset skor
+    int  GetScore() const; // Jika diperlukan di tempat lain
 };
