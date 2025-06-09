@@ -5,7 +5,7 @@ Pipe::Pipe(float x, float gapY, float _gapHeight, Texture2D tex, float _desiredW
     : texture(tex),
       currentFrame(0),
       framesCounter(0),
-      framesSpeed(8),    // misal 8 fps untuk animasi
+      framesSpeed(8),    
       maxFrames(12),
       cols(4), rows(3),
       desiredWidth(_desiredWidth),
@@ -18,13 +18,8 @@ Pipe::Pipe(float x, float gapY, float _gapHeight, Texture2D tex, float _desiredW
     // Hitung faktor scale agar lebar frame menjadi desiredWidth
     scale = desiredWidth / frameWidth;
 
-    // Inisialisasi frameRec ke frame awal (0,0) di spritesheet
     frameRec = { 0.0f, 0.0f, frameWidth, frameHeight };
 
-    // Collider: 
-    // - Lebar = desiredWidth
-    // - Tinggi atas = gapY (jarak dari atas sampai awal gap)
-    // - Tinggi bawah = sisa layar setelah gapY + gapHeight
     upper = { x, 0.0f, desiredWidth, gapY };
     lower = { x, gapY + gapHeight, desiredWidth, GetScreenHeight() - gapY - gapHeight };
 }

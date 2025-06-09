@@ -16,7 +16,7 @@ void Bird::SetTexture(Texture2D tex) {
     
     if (texture.id != 0) {
         TraceLog(LOG_INFO, "Bird texture loaded: %dx%d", texture.width, texture.height);
-        // Sekarang sprite sheet 5 kolom x 5 baris = total 25 frame
+        
         float fw = static_cast<float>(texture.width) / 5.0f;
         float fh = static_cast<float>(texture.height) / 5.0f;
         frameRec = { 0.0f, 0.0f, fw, fh };
