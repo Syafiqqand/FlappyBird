@@ -6,12 +6,20 @@
 #include "include/pipe_factory.h"
 #include "include/game_manager.h"
 #include "include/score_manager.h"
+#include "include/audio_manager.h"
+#include "include/audio_commands.h"
 
 // ------------------------------------
 // Variabel global untuk background & obstacle
 // ------------------------------------
 Texture2D background;
 Texture2D obstacleTexture;
+
+// Hapus variabel global audio yang tidak diperlukan lagi
+// Music bgMusic;
+// Sound jumpSound;
+// Sound scoreSound;
+// Sound crashSound;
 
 enum GameOverAction {
     GO_NONE,
@@ -130,6 +138,11 @@ int main() {
     const int screenHeight = 1080;
 
     InitWindow(screenWidth, screenHeight, "Flappy Bird");
+    
+    // Inisialisasi AudioManager
+    AudioManager::getInstance()->Initialize();
+    AudioManager::getInstance()->PlayBackgroundMusic();
+    
     SetTargetFPS(60);
 
     // Load background
@@ -137,6 +150,8 @@ int main() {
     if (background.id == 0) {
         TraceLog(LOG_WARNING, "BACKGROUND TEXTURE FAILED TO LOAD!");
     }
+
+   
 
     // Load spritesheet obstacle
     obstacleTexture = LoadTexture("SpriteSheet Obstacle rev.png");
@@ -171,10 +186,17 @@ int main() {
     std::vector<Pipe> pipes;
 
     while (!WindowShouldClose()) {
+        // Update music buffer
+        AudioManager::getInstance()->Update();
+        
         // --- Input ---
         if (gameManager.GetState() == PLAYING) {
+            // Saat jump
             if (IsKeyPressed(KEY_SPACE)) {
                 bird.Jump();
+                // Gunakan Command Pattern
+                PlaySoundCommand jumpCmd(JUMP);
+                jumpCmd.execute();
             }
         }
 
@@ -210,14 +232,21 @@ int main() {
 
             // Hapus pipa yang keluar layar
             for (size_t i = 0; i < pipes.size(); ) {
+                // Saat mendapat score
                 if (pipes[i].IsOffScreen()) {
-                    // Setiap pipa keluar layar +1 score
                     gameManager.Notify(1);
-                    // Hapus pipa dari vektor
+                    PlaySoundCommand scoreCmd(SCORE);
+                    scoreCmd.execute();
                     pipes.erase(pipes.begin() + i);
-                    // Jangan i++ karena elemen berikutnya sudah bergeser ke index i
                 } else {
-                    i++;
+                    // Saat tabrakan
+                    if (bird.CheckCollision(pipes[i])) {
+                        gameManager.SetState(GAME_OVER);
+                        PlaySoundCommand crashCmd(CRASH);
+                        crashCmd.execute();
+                        break; // Keluar dari loop setelah tabrakan
+                    }
+                    i++; // Hanya increment jika tidak menghapus elemen
                 }
             }
         }
@@ -272,7 +301,10 @@ int main() {
     UnloadTexture(birdTexture);
     UnloadTexture(obstacleTexture);
     UnloadTexture(background);
-
+    
+    // Cleanup resources
+    AudioManager::getInstance()->Cleanup();
+    
     CloseWindow();
     return 0;
 }
