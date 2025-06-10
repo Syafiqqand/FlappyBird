@@ -1,10 +1,6 @@
 #include "include/game_manager.h"
 #include <vector>
 
-// Jika Observer dideklarasikan di game_manager.h, maka pastikan game_manager.h sudah mencakup:
-// #include <vector>
-// class Observer { public: virtual void OnNotify(int) = 0; };
-
 void GameManager::Attach(Observer* observer) {
     observers.push_back(observer);
 }
