@@ -138,11 +138,11 @@ int main() {
     const int screenHeight = 1080;
 
     InitWindow(screenWidth, screenHeight, "Flappy Bird");
-    
+
     // Inisialisasi AudioManager
     AudioManager::getInstance()->Initialize();
     AudioManager::getInstance()->PlayBackgroundMusic();
-    
+
     SetTargetFPS(60);
 
     // Load background
@@ -151,7 +151,9 @@ int main() {
         TraceLog(LOG_WARNING, "BACKGROUND TEXTURE FAILED TO LOAD!");
     }
 
-   
+    // Variabel untuk efek scrolling background
+    float bgScrollX = 0.0f;
+    const float bgScrollSpeed = 100.0f; 
 
     // Load spritesheet obstacle
     obstacleTexture = LoadTexture("SpriteSheet Obstacle rev.png");
@@ -173,43 +175,43 @@ int main() {
     gameManager.Attach(&scoreManager);
     gameManager.SetState(MENU);
 
-    float pipeTextureWidth = 250.0f;   // <-- Ubah saja nilainya (contoh: 80.0f)
-
+    float pipeTextureWidth = 250.0f;
     int spawnTimer = PipeFactory::GetRandomSpawnInterval();
-
     std::vector<Pipe> pipes;
 
+    // Main game loop
     while (!WindowShouldClose()) {
         // --- Input ---
         if (gameManager.GetState() == PLAYING) {
-            // Saat jump
             if (IsKeyPressed(KEY_SPACE)) {
                 bird.Jump();
-                // Gunakan Command Pattern
                 PlaySoundCommand jumpCmd(JUMP);
                 jumpCmd.execute();
             }
         }
 
         // --- Update ---
+        AudioManager::getInstance()->Update();
+        
         if (gameManager.GetState() == PLAYING) {
             bird.Update();
 
-            // Turunkan spawnTimer
-            spawnTimer--;
-            if (spawnTimer <= 0) {
-                // Ketika waktunya spawn, buat pipa baru
+            // Update scroll background
+            bgScrollX -= bgScrollSpeed * GetFrameTime();
+            if (bgScrollX <= -background.width) bgScrollX = 0.0f;
+
+            // Spawn pipa
+            if (--spawnTimer <= 0) {
                 pipes.push_back(
-                PipeFactory::CreatePipe(
-                    screenWidth,
-                    screenHeight,
-                    obstacleTexture,
-                    PipeFactory::GetMinGapHeight(),
-                    PipeFactory::GetMaxGapHeight(),
-                    pipeTextureWidth
-                )
-            );
-                // Reset spawnTimer dengan interval acak lagi
+                    PipeFactory::CreatePipe(
+                        screenWidth,
+                        screenHeight,
+                        obstacleTexture,
+                        PipeFactory::GetMinGapHeight(),
+                        PipeFactory::GetMaxGapHeight(),
+                        pipeTextureWidth
+                    )
+                );
                 spawnTimer = PipeFactory::GetRandomSpawnInterval();
             }
 
@@ -221,23 +223,20 @@ int main() {
                 }
             }
 
-            // Hapus pipa yang keluar layar
+            // Hapus pipa yang sudah off-screen atau collision
             for (size_t i = 0; i < pipes.size(); ) {
-                // Saat mendapat score
                 if (pipes[i].IsOffScreen()) {
                     gameManager.Notify(1);
                     PlaySoundCommand scoreCmd(SCORE);
                     scoreCmd.execute();
                     pipes.erase(pipes.begin() + i);
+                } else if (bird.CheckCollision(pipes[i])) {
+                    gameManager.SetState(GAME_OVER);
+                    PlaySoundCommand crashCmd(CRASH);
+                    crashCmd.execute();
+                    break;
                 } else {
-                    // Saat tabrakan
-                    if (bird.CheckCollision(pipes[i])) {
-                        gameManager.SetState(GAME_OVER);
-                        PlaySoundCommand crashCmd(CRASH);
-                        crashCmd.execute();
-                        break; // Keluar dari loop setelah tabrakan
-                    }
-                    i++; // Hanya increment jika tidak menghapus elemen
+                    ++i;
                 }
             }
         }
@@ -251,44 +250,35 @@ int main() {
                     bird = Bird();
                     bird.SetTexture(birdTexture);
                     pipes.clear();
-                    // Reset spawnTimer juga
                     spawnTimer = PipeFactory::GetRandomSpawnInterval();
                 } else if (menuAction == MENU_QUIT) {
                     break;
                 }
-            }
-            else {
-                // Gambar background 
+            } else {
+                // Gambar background
                 if (gameManager.GetState() == PLAYING) {
-                    // Gambar background dua kali untuk efek looping
                     DrawTexture(background, bgScrollX, 0, WHITE);
                     DrawTexture(background, bgScrollX + background.width, 0, WHITE);
                 } else {
-                    // State GAME_OVER: background statis
                     DrawTexture(background, 0, 0, WHITE);
                 }
 
                 if (gameManager.GetState() == PLAYING) {
                     bird.Draw();
-                    for (auto& pipe : pipes) {
-                        pipe.Draw();
-                    }
+                    for (auto& pipe : pipes) pipe.Draw();
                     scoreManager.Draw();
                 }
-                
 
                 if (gameManager.GetState() == GAME_OVER) {
-                    
-                    GameOverAction gameOverAction = DrawGameOverScreen( scoreManager.GetScore() );
-
-                    if (gameOverAction == GO_RESTART) {
+                    GameOverAction action = DrawGameOverScreen(scoreManager.GetScore());
+                    if (action == GO_RESTART) {
                         gameManager.Reset();
                         scoreManager.Reset();
                         bird = Bird();
                         bird.SetTexture(birdTexture);
                         pipes.clear();
                         spawnTimer = PipeFactory::GetRandomSpawnInterval();
-                    } else if (gameOverAction == GO_MAIN_MENU) {
+                    } else if (action == GO_MAIN_MENU) {
                         gameManager.SetState(MENU);
                     }
                 }
@@ -296,14 +286,12 @@ int main() {
         EndDrawing();
     }
 
-    // Unload semua texture sebelum exit
+    // Unload resources
     UnloadTexture(birdTexture);
     UnloadTexture(obstacleTexture);
     UnloadTexture(background);
-    
-    // Cleanup resources
+
     AudioManager::getInstance()->Cleanup();
-    
     CloseWindow();
     return 0;
 }
