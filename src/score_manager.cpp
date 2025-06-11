@@ -5,7 +5,6 @@ void ScoreManager::OnNotify(int event) {
     if (event == 1) {
         score += 1;
     }
-    // Jika suatu saat ada event lain, bisa di-handle di sini.
 }
 
 void ScoreManager::Draw() const {

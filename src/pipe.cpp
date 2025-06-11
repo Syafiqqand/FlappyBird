@@ -47,27 +47,25 @@ void Pipe::Update() {
 void Pipe::Draw() const {
     // --- Gambar pipa bawah (tanpa rotasi) ---
     Rectangle destRecBot = {
-        lower.x,         // posX
-        lower.y,         // posY
-        desiredWidth,    // lebar → width sprite setelah scale
-        lower.height     // tinggi → sama dengan height collider
+        lower.x,         
+        lower.y,         
+        desiredWidth,    
+        lower.height     
     };
     DrawTexturePro(
         texture,
         frameRec,
         destRecBot,
-        { 0.0f, 0.0f },  // origin di sudut kiri-atas
-        0.0f,            // rotasi 0°
+        { 0.0f, 0.0f },  
+        0.0f,            
         WHITE
     );
 
-    // --- Gambar pipa atas (flip 180°) ---
-    // Kita perlu meletakkan origin di tengah destRecTop agar pas saat rotasi
     Rectangle destRecTop = {
-        upper.x + (desiredWidth * 0.5f),      // posX + originX
-        upper.y + (upper.height * 0.5f),      // posY + originY
-        desiredWidth,                         // lebar
-        upper.height                          // tinggi
+        upper.x + (desiredWidth * 0.5f),      
+        upper.y + (upper.height * 0.5f),      
+        desiredWidth,                        
+        upper.height                          
     };
     Vector2 originFlip = { desiredWidth * 0.5f, upper.height * 0.5f };
 
@@ -76,7 +74,7 @@ void Pipe::Draw() const {
         frameRec,
         destRecTop,
         originFlip,
-        180.0f,    // rotasi 180° agar sprite terbalik
+        180.0f,   
         WHITE
     );
 }

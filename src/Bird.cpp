@@ -38,21 +38,19 @@ void Bird::Update() {
         velocity = 0;
     }
     
-    // Update animasi: total 25 frame (0..24)
     framesCounter++;
     if (framesCounter >= (60 / framesSpeed)) {
         framesCounter = 0;
         currentFrame++;
         if (currentFrame >= 25) currentFrame = 0;
         int frameX = currentFrame % 5;
-        int frameY = currentFrame / 5; // integer division
+        int frameY = currentFrame / 5; 
         frameRec.x = frameX * frameRec.width;
         frameRec.y = frameY * frameRec.height;
     }
 }
 
 bool Bird::CheckCollision(const Pipe& pipe) const {
-    // Collider lingkaran: radius = setengah ukuran frame (diperkecil 80% untuk fitting)
     float r = (frameRec.width < frameRec.height ? frameRec.width/2.0f : frameRec.height/2.0f) * 0.8f;
     Vector2 center = { x, y };
     return CheckCollisionCircleRec(center, r, pipe.upper)
@@ -71,13 +69,11 @@ void Bird::Draw() const {
         };
         DrawTextureRec(texture, frameRec, position, WHITE);
     } else {
-        // Jika texture belum ada, tampilkan placeholder
         DrawCircle((int)x, (int)y, 20, RED);
     }
 }
 
 Rectangle Bird::GetRect() const {
-    // Untuk keperluan hitung posisi (meski collision pakai lingkaran)
     return { 
         x - frameRec.width/2.0f, 
         y - frameRec.height/2.0f, 

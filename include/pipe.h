@@ -8,7 +8,7 @@ public:
     Rectangle lower;
     bool passed = false;
 
-    // --- Variabel animasi ---
+    // animasi
     Texture2D texture;      
     Rectangle frameRec;     
     int     currentFrame;   
@@ -19,7 +19,7 @@ public:
     float   frameWidth;     
     float   frameHeight;    
 
-    // --- Scaling & ukuran gap ---
+    // Scaling & ukuran gap 
     float   desiredWidth;   
     float   scale;          
     float   gapHeight;      

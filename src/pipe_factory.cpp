@@ -1,7 +1,7 @@
 #include "include/pipe_factory.h"
 #include <raylib.h>
 
-// === Interval dan tinggi gap default ===
+// Interval dan tinggi gap 
 const int   MIN_SPAWN_INTERVAL = 200;
 const int   MAX_SPAWN_INTERVAL = 350;
 

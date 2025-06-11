@@ -9,17 +9,8 @@
 #include "include/audio_manager.h"
 #include "include/audio_commands.h"
 
-// ------------------------------------
-// Variabel global untuk background & obstacle
-// ------------------------------------
 Texture2D background;
 Texture2D obstacleTexture;
-
-// Hapus variabel global audio yang tidak diperlukan lagi
-// Music bgMusic;
-// Sound jumpSound;
-// Sound scoreSound;
-// Sound crashSound;
 
 enum GameOverAction {
     GO_NONE,
@@ -28,7 +19,6 @@ enum GameOverAction {
 };
 
 GameOverAction DrawGameOverScreen(int score) {
-    // Background semi-transparan
     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.5f));
 
     DrawText(
@@ -145,23 +135,19 @@ int main() {
 
     SetTargetFPS(60);
 
-    // Load background
     background = LoadTexture("Bg Design Pattern.png");
     if (background.id == 0) {
         TraceLog(LOG_WARNING, "BACKGROUND TEXTURE FAILED TO LOAD!");
     }
 
-    // Variabel untuk efek scrolling background
     float bgScrollX = 0.0f;
     const float bgScrollSpeed = 100.0f; 
 
-    // Load spritesheet obstacle
     obstacleTexture = LoadTexture("SpriteSheet Obstacle rev.png");
     if (obstacleTexture.id == 0) {
         TraceLog(LOG_ERROR, "Gagal load obstacle spritesheet!");
     }
 
-    // Load texture untuk burung
     Texture2D birdTexture = LoadTexture("Char.png");
     if (birdTexture.id == 0) {
         TraceLog(LOG_ERROR, "FAILED TO LOAD BIRD TEXTURE!");
@@ -286,7 +272,6 @@ int main() {
         EndDrawing();
     }
 
-    // Unload resources
     UnloadTexture(birdTexture);
     UnloadTexture(obstacleTexture);
     UnloadTexture(background);
